@@ -17,6 +17,7 @@ import * as Cesium from 'cesium';
 import { forward as toMGRS } from 'mgrs';
 import { CITY_POIS } from './locations.js';
 import { composeLocalityTag } from './hudLocality.js';
+import { apiUrl } from './basePath.js';
 import { ellipsoidalToMslDisplayM, ensureGeoidReady, geoidHeight } from './data/geoid.js';
 import { getBasemapLabelContext } from './voice/gevActions.js';
 import { isHudSummaryUnconfigured } from './hudSummaryResponse.js';
@@ -35,7 +36,7 @@ const MILITARY_STYLES = new Set(['retro', 'surveillance', 'thermal']);
 /** Allowed HUD layout variants. */
 const HUD_VARIANTS = new Set(['tactical', 'operator', 'minimal']);
 const HUD_SUMMARY_INTERVAL_MS = 15000;
-const HUD_SUMMARY_URL = '/api/openai/hud-summary';
+const HUD_SUMMARY_URL = apiUrl('/api/openai/hud-summary');
 
 /**
  * Cell size (degrees) for the ALT readout's geoid-undulation cache. N changes

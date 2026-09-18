@@ -1,5 +1,6 @@
 import * as Cesium from 'cesium';
 import { CITY_POIS, findPoiByName, flyToGlobeView, flyToLandmark, flyToPOI, flyToPresetLocation, GLOBE_VIEW, searchAndFlyTo } from '../locations.js';
+import { apiUrl } from '../basePath.js';
 import {
   getContextStore,
   getSelectedEntityContext,
@@ -3055,7 +3056,7 @@ async function fetchNearbyPlaces(latitude, longitude, cameraHeightM) {
         lon: String(longitude),
         radiusM: String(radiusM),
       });
-      const response = await fetchWithTimeout(`/api/google/nearby-places?${params}`, {}, 5000);
+      const response = await fetchWithTimeout(apiUrl(`/api/google/nearby-places?${params}`), {}, 5000);
       const data = await response.json().catch(() => null);
       const places = response.ok && Array.isArray(data?.places)
       ? data.places.filter((place) => place?.name).slice(0, 12)
