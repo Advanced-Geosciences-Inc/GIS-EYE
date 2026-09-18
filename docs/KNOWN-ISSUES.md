@@ -1,6 +1,6 @@
 # KNOWN ISSUES
 
-Updated: July 8, 2026
+Updated: September 18, 2026
 
 This file tracks active runtime issues only.
 
@@ -57,9 +57,10 @@ Status: Open (owner-accepted 2026-07-08, documented)
   a few stragglers take one more poll.
 - **Born-grounded first poll:** a contact first seen on the ground with no altitude
   data renders at the geoid for ≤1 poll until its floor cell warms.
-- Full context, improvement ideas, and the verification oracle
-  (`scripts/qa-floor-verify.mjs`):
-  `docs/superpowers/reports/2026-07-08-height-datum-handover.md`.
+- The verification oracle is `scripts/qa-floor-verify.mjs`. The original handover
+  report (`docs/superpowers/reports/2026-07-08-height-datum-handover.md`) and the
+  `feat/height-datum` branch were never imported into this repository; the summary
+  above is the surviving context.
 
 ---
 
