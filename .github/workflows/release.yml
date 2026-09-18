@@ -1,0 +1,87 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version to release (x.y.z)
+        required: true
+  push:
+    branches: [main]
+    paths: [release-notes.json]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  # Step 1 (manual dispatch): cut CHANGELOG [Unreleased] into a version and
+  # open a release PR for review.
+  cut:
+    if: github.event_name == 'workflow_dispatch'
+    name: Open release PR
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.14.0
+
+      - name: Cut release notes
+        run: node scripts/release-notes.mjs --version "${{ github.event.inputs.version }}"
+
+      - name: Open PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION="${{ github.event.inputs.version }}"
+          BRANCH="release/v${VERSION}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$BRANCH"
+          git add CHANGELOG.md package.json package-lock.json release-notes.json
+          git commit -m "chore(release): prepare v${VERSION}"
+          git push -u origin "$BRANCH"
+          gh pr create --base main --head "$BRANCH" \
+            --title "Release v${VERSION}" \
+            --body "Cuts CHANGELOG [Unreleased] into v${VERSION}. Merging this PR tags the release and deploys to production (after the production environment approval)."
+
+  # Step 2 (runs when the release PR merges): tag and publish the GitHub
+  # Release with the cut notes. Publishing triggers deploy-production.yml.
+  publish:
+    if: github.event_name == 'push'
+    name: Tag and publish release
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION=$(node -p "JSON.parse(require('fs').readFileSync('release-notes.json','utf8')).version")
+          TAG="v${VERSION}"
+          if git rev-parse "refs/tags/${TAG}" >/dev/null 2>&1 || gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release ${TAG} already exists — nothing to publish."
+            exit 0
+          fi
+          node -e "
+            const {version, date, notes}=JSON.parse(require('fs').readFileSync('release-notes.json','utf8'));
+            const groups={};
+            for (const n of notes) (groups[n.type] ??= []).push(n.text);
+            let body='';
+            for (const [type, items] of Object.entries(groups)) {
+              body += '## ' + type[0].toUpperCase()+type.slice(1) + '\n\n';
+              for (const text of items) body += '- ' + text + '\n';
+              body += '\n';
+            }
+            require('fs').writeFileSync('release-body.md', body);
+          "
+          gh release create "$TAG" --target "${{ github.sha }}" \
+            --title "v${VERSION}" --notes-file release-body.md

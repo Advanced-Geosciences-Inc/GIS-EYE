@@ -1,0 +1,52 @@
+# Fly.io production app — deployed by publishing a GitHub Release
+# (.github/workflows/deploy-production.yml), promoting the exact image the
+# staging app validated. See docs/agi/DEPLOY.md.
+app = "gis-eye-prod"
+primary_region = "dfw"
+
+# Blue/green: the new machine set must pass health checks before traffic
+# moves, and the old set stays available for instant rollback. This app is
+# deliberately stateless (no volumes; quota/usage state lives in Redis —
+# Phase 3) so concurrent blue+green sets are safe.
+[deploy]
+  strategy = "bluegreen"
+
+[env]
+  PORT = "8080"
+  GEV_BASE = "/portal/gis/"
+  GEV_FEATURE_OPENSKY = "0"
+  GEV_FEATURE_CABLES = "0"
+  GEV_RATELIMIT_OPENAI_PER_MIN = "30"
+  GEV_RATELIMIT_GOOGLE_PER_MIN = "120"
+  # Portal SSO — flip to "jwks" once the GeoStack portal issues session JWTs
+  # (see docs/agi/DEPLOY.md). GEV_JWT_HS256_SECRET / UPSTASH_* are Fly
+  # secrets, never listed here.
+  GEV_AUTH_MODE = "none"
+  # GEV_JWT_ISSUER = "https://geostack.com"
+  # GEV_JWT_JWKS_URL = "https://geostack.com/.well-known/jwks.json"
+  # GEV_LOGIN_URL = "https://geostack.com/portal/login"
+  # Per-tenant budgets (active once UPSTASH_REDIS_REST_* secrets are set):
+  GEV_QUOTA_OPENAI_PER_MIN = "20"
+  GEV_QUOTA_OPENAI_PER_DAY = "500"
+  GEV_QUOTA_GOOGLE_PER_MIN = "60"
+  GEV_QUOTA_GOOGLE_PER_DAY = "5000"
+  GEV_QUOTA_TOMTOM_PER_MIN = "120"
+  GEV_QUOTA_TOMTOM_PER_DAY = "10000"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "off"
+  auto_start_machines = true
+  min_machines_running = 2
+
+  [[http_service.checks]]
+    interval = "15s"
+    timeout = "5s"
+    grace_period = "30s"
+    method = "GET"
+    path = "/healthz"
+
+[[vm]]
+  size = "shared-cpu-2x"
+  memory = "2gb"

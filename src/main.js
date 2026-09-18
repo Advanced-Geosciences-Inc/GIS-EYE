@@ -34,6 +34,10 @@ import { installScopeMask } from './scopeMask.js';
 import { initFirstRunExperience } from './firstRunExperience.js';
 import { initKeySetup } from './keySetup.js';
 import { loadPhotorealisticTileset } from './mapStartup.js';
+import { loadRuntimeConfig, installFeatureGate } from './runtimeConfig.js';
+import { initUpdateToast } from './updateToast.js';
+import { runStateMigrations } from './stateMigrations.js';
+import { initTheme } from './theme/themeController.js';
 
 initLogoGaze();
 
@@ -71,6 +75,18 @@ function describeError(error) {
 async function init() {
   const loadingScreen = document.getElementById('loading-screen');
   const loaderStatus = loadingScreen.querySelector('.loader-status');
+
+  // Deployment config fetch overlaps viewer startup; consumed before layer
+  // restoration below. Fails open to all-features-enabled (local setups).
+  const runtimeConfigPromise = loadRuntimeConfig();
+
+  // Carry stored user state forward across storage-shape changes BEFORE
+  // anything below reads it (see src/stateMigrations.js).
+  runStateMigrations();
+
+  // Re-apply the theme through the durable API (the inline head script in
+  // index.html already prevented a flash) and persist a ?theme= handoff.
+  initTheme();
 
   try {
     loaderStatus.textContent = 'Configuring viewer...';
@@ -224,6 +240,9 @@ async function init() {
     for (const layer of localDataLayers) {
       dataManager.register(layer);
     }
+    // Hosted deployments disable license-gated layers per deployment; the
+    // guard must exist before share restoration can re-enable anything.
+    installFeatureGate(dataManager, await runtimeConfigPromise);
     // Restoration starts only after the complete production registry is sealed.
     dataManager.finalizeRegistrations(LAYER_STATE_REGISTRY);
     if (import.meta.env.DEV) {
@@ -271,6 +290,10 @@ async function init() {
     // module removes its own surface when the dev-server endpoint is absent
     // (prod builds, non-local visitors), so this costs prod exactly nothing.
     void initKeySetup();
+
+    // Watch for new deployments and offer the update toast (no-op until the
+    // server reports a different build than the one this client loaded).
+    initUpdateToast();
 
     // Expose for debugging
     // Idle render governor: flips the scene into requestRenderMode whenever

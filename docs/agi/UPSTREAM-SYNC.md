@@ -17,26 +17,30 @@ git push -u origin upstream-sync
 # open a PR into main
 ```
 
-## Conflict guide: `vite.config.js` → `server/`
+## Conflict guide: `vite.config.js`
 
-The AGI fork extracts the API middlewares out of `vite.config.js` into
-`server/` so a production container can serve them (upstream keeps them
-inline). Upstream diffs that touch `vite.config.js` proxy bodies must be
-re-applied to the matching extracted file. Maintain this table as extraction
-proceeds:
+The fork deliberately does NOT extract the proxy middlewares out of
+`vite.config.js`. The production server (`server/app.mjs`) imports the
+config's default export, calls the factory, and installs every plugin whose
+name matches `-proxy`/`-proxies` onto a plain connect app — so upstream's
+file stays upstream-shaped and merges cleanly. The fork's only edits inside
+`vite.config.js` are:
 
-| Upstream location (vite.config.js) | Fork location |
-|---|---|
-| shared helpers (body reading, rate limit, SSRF guards) | `server/lib/*.mjs` |
-| per-proxy plugin bodies | `server/proxies/<name>.mjs` |
-| `defineConfig` tail | stays in `vite.config.js` |
+- one import of `./server/mw/meta.mjs` and the `gevRuntimeMeta()` entry in
+  the plugins array (dev/preview parity for `/healthz`, `/api/config`,
+  `/api/version`);
+- `base: env.GEV_BASE || '/'` in the returned config.
 
-Rules that keep conflicts small:
+When syncing, keep those three small hunks and take upstream's version of
+everything else. Two invariants to re-check after every sync (the server
+tests cover both): new upstream proxy plugins must follow the `-proxy` name
+suffix to be served in production (server/app.mjs `INSTALL_NAME`), and
+`gev-key-setup` must stay out of the installed set.
 
-- Extracted code is moved **verbatim** (names, JSDoc, comments untouched), so
-  upstream hunks usually apply cleanly to the new file path with `git apply
-  --3way` or by hand.
-- Never reformat extracted code while syncing.
+Other recurring fork hunks:
+
+- Client `/api/*` fetches go through `apiUrl()` from `src/basePath.js`; wrap
+  any new upstream call sites during the sync (grep `'/api/` in `src/`).
 - `style.css` token derivation (theming) is a small edit at the top `:root`
   block; re-apply it if upstream rewrites that block.
 

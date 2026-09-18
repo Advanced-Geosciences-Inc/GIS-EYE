@@ -5,6 +5,25 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>God's Eye View</title>
   <link rel="icon" type="image/svg+xml" href="/logo.svg" />
+  <script>
+    // No-flash theme boot: mirror of src/theme/themeController.js precedence
+    // (?theme= → gs_theme cookie → saved choice → system), applied before
+    // stylesheets load. Kept tiny and dependency-free on purpose.
+    (function () {
+      try {
+        var theme = new URLSearchParams(location.search).get('theme');
+        if (theme !== 'light' && theme !== 'dark') {
+          var cookie = /(?:^|;\s*)gs_theme=(light|dark)(?:;|$)/.exec(document.cookie || '');
+          theme = cookie ? cookie[1] : null;
+        }
+        if (theme !== 'light' && theme !== 'dark') {
+          try { theme = localStorage.getItem('gev:theme:v1'); } catch (e) { theme = null; }
+        }
+        if (theme === 'light' || theme === 'dark') document.documentElement.dataset.theme = theme;
+      } catch (e) { /* default palette applies */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="/src/theme/palette.css" />
   <link rel="stylesheet" href="/style.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -62,6 +81,9 @@
 
   <!-- Toast notification -->
   <div id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- Update-available toast (new deploys; src/updateToast.js) -->
+  <div id="update-toast" hidden></div>
 
   <!-- Safe frame guides for recording composition -->
   <div id="safe-frame-overlay">

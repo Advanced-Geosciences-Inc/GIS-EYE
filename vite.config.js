@@ -75,6 +75,7 @@ import {
   validTerrainResult,
 } from './src/data/terrainHeightsProxy.js';
 import { VOICE_MODELS, isKnownVoiceTier, resolveVoiceModel } from './src/voice/voiceCost.js';
+import { gevRuntimeMeta } from './server/mw/meta.mjs';
 
 /** Resolve __dirname for ESM context. */
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -7738,8 +7739,13 @@ export default defineConfig(({ mode }) => {
   const env = { ...process.env };
   const localAllowedHosts = ['localhost', '127.0.0.1', '.local'];
   return {
+    // Deployment path prefix (e.g. /portal/gis/) for hosted builds; '/' for
+    // local dev and the Pinokio launcher. The production entry
+    // (server/index.mjs) serves prefixed and bare URLs alike.
+    base: env.GEV_BASE || '/',
     plugins: [
       cesium(),
+      gevRuntimeMeta(),
       openSkyProxy(),
       celestrakProxy(),
       tomtomProxy(),

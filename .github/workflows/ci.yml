@@ -49,6 +49,34 @@ jobs:
       - name: Build production bundle
         run: npm run build
 
+  docker-smoke:
+    name: docker-smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Build production image
+        run: docker build -t gis-eye-ci --build-arg GIT_SHA=${{ github.sha }} .
+
+      - name: Boot and probe
+        run: |
+          docker run -d --name gis-eye-smoke -p 8080:8080 gis-eye-ci
+          for i in $(seq 1 20); do
+            if curl -fsS http://127.0.0.1:8080/healthz >/dev/null 2>&1; then break; fi
+            sleep 2
+          done
+          curl -fsS http://127.0.0.1:8080/healthz | grep -q '"ok":true'
+          curl -fsS http://127.0.0.1:8080/api/config | grep -q '"features"'
+          curl -fsS http://127.0.0.1:8080/ | grep -q "God's Eye View"
+          # Dev-only credential endpoints must be absent from the image.
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8080/api/setup/status)" = "404"
+          docker logs gis-eye-smoke | head -20
+          docker rm -f gis-eye-smoke
+
   windows-onboarding:
     name: Windows onboarding
     runs-on: windows-latest

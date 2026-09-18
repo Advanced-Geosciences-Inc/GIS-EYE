@@ -1,0 +1,49 @@
+name: Deploy staging
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Deploys queue rather than cancel: a half-cancelled deploy is worse than a
+# briefly stale one.
+concurrency:
+  group: deploy-staging
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Build, deploy, smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: staging
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set up flyctl
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Build and deploy image tagged with the commit SHA
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          flyctl deploy -c fly.staging.toml --remote-only \
+            --image-label sha-${{ github.sha }} \
+            --build-arg GEV_BASE=/portal/gis/ \
+            --build-arg GIT_SHA=${{ github.sha }} \
+            --build-arg GOOGLE_MAPS_API_KEY=${{ secrets.GOOGLE_MAPS_API_KEY }} \
+            --build-arg CESIUM_ION_TOKEN=${{ secrets.CESIUM_ION_TOKEN }}
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.14.0
+
+      - name: Remote smoke test
+        run: node scripts/smoke-remote.mjs https://gis-eye-staging.fly.dev/portal/gis/

@@ -1,0 +1,60 @@
+/* ═══════════════════════════════════════════════
+   GIS-EYE theme palette (--gs-* tokens)
+
+   THE swap-in file for matching the GeoStack portal: replace the values
+   below with the portal's design tokens (colors only — layout stays put).
+   The app's own variables (style.css :root) derive from these, so the two
+   palettes here retheme all tokenized chrome. The globe canvas, GLSL
+   visual styles, and data-semantic colors (aircraft/vessel classes) are
+   deliberately NOT themed.
+
+   Selection order (src/theme/themeController.js sets data-theme on <html>):
+     ?theme= param → gs_theme cookie → saved choice → prefers-color-scheme,
+   defaulting to dark.
+   ═══════════════════════════════════════════════ */
+
+/* ── Dark (default; upstream's Apple-meets-Blade-Runner look) ── */
+:root,
+:root[data-theme='dark'] {
+  --gs-surface-0: #0a0a0f;
+  --gs-surface-1: rgba(12, 12, 20, 0.72);
+  --gs-border: rgba(255, 255, 255, 0.08);
+  --gs-border-strong: rgba(255, 255, 255, 0.15);
+  --gs-accent: #00d4ff;
+  --gs-accent-soft: rgba(0, 212, 255, 0.15);
+  --gs-accent-glow: rgba(0, 212, 255, 0.4);
+  --gs-text-1: #e8eaed;
+  --gs-text-2: rgba(232, 234, 237, 0.5);
+  --gs-text-3: rgba(232, 234, 237, 0.3);
+}
+
+/* ── Light (PLACEHOLDER neutral palette until the real GeoStack portal
+      tokens are pulled in — keep every key, swap every value) ── */
+:root[data-theme='light'] {
+  --gs-surface-0: #f4f6f8;
+  --gs-surface-1: rgba(255, 255, 255, 0.82);
+  --gs-border: rgba(16, 24, 40, 0.12);
+  --gs-border-strong: rgba(16, 24, 40, 0.24);
+  --gs-accent: #0072c3;
+  --gs-accent-soft: rgba(0, 114, 195, 0.12);
+  --gs-accent-glow: rgba(0, 114, 195, 0.32);
+  --gs-text-1: #16212e;
+  --gs-text-2: rgba(22, 33, 46, 0.62);
+  --gs-text-3: rgba(22, 33, 46, 0.38);
+}
+
+/* System preference applies only when no explicit choice was made. */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme='dark']):not([data-theme='light']) {
+    --gs-surface-0: #f4f6f8;
+    --gs-surface-1: rgba(255, 255, 255, 0.82);
+    --gs-border: rgba(16, 24, 40, 0.12);
+    --gs-border-strong: rgba(16, 24, 40, 0.24);
+    --gs-accent: #0072c3;
+    --gs-accent-soft: rgba(0, 114, 195, 0.12);
+    --gs-accent-glow: rgba(0, 114, 195, 0.32);
+    --gs-text-1: #16212e;
+    --gs-text-2: rgba(22, 33, 46, 0.62);
+    --gs-text-3: rgba(22, 33, 46, 0.38);
+  }
+}
