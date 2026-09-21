@@ -6,13 +6,13 @@
   "type": "module",
   "license": "MIT",
   "author": "Bilawal Sidhu",
-  "homepage": "https://github.com/bilawalsidhu/gods-eye-view#readme",
+  "homepage": "https://github.com/Advanced-Geosciences-Inc/GIS-EYE#readme",
   "repository": {
     "type": "git",
-    "url": "https://github.com/bilawalsidhu/gods-eye-view.git"
+    "url": "https://github.com/Advanced-Geosciences-Inc/GIS-EYE.git"
   },
   "bugs": {
-    "url": "https://github.com/bilawalsidhu/gods-eye-view/issues"
+    "url": "https://github.com/Advanced-Geosciences-Inc/GIS-EYE/issues"
   },
   "engines": {
     "node": ">=24.14.0 <25 || >=26 <27"
@@ -40,21 +40,26 @@
     "preview": "vite preview",
     "test": "node scripts/run-unit-tests.mjs",
     "test:track": "node scripts/track-regression.mjs",
-    "qa:map-source-tray": "node scripts/qa-map-source-tray.mjs"
+    "qa:map-source-tray": "node scripts/qa-map-source-tray.mjs",
+    "serve:prod": "node server/index.mjs",
+    "smoke:api": "node scripts/smoke-api.mjs"
   },
   "dependencies": {
     "@mapbox/vector-tile": "^3.0.0",
     "cesium": "^1.124.0",
+    "connect": "^3.7.0",
     "egm96-universal": "^1.1.1",
+    "jose": "^5.10.0",
     "mgrs": "^2.1.0",
     "pbf": "^5.1.2",
-    "satellite.js": "^6.0.2"
-  },
-  "devDependencies": {
-    "puppeteer": "^24.37.5",
-    "sharp": "^0.34.5",
+    "satellite.js": "^6.0.2",
+    "sirv": "^3.0.2",
     "vite": "^6.0.0",
     "vite-plugin-cesium": "^1.2.23",
     "ws": "^8.21.0"
+  },
+  "devDependencies": {
+    "puppeteer": "^24.37.5",
+    "sharp": "^0.34.5"
   }
 }

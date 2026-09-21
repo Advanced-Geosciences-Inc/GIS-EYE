@@ -23,7 +23,6 @@ export function assertNode24AllocationRuntime(version = process.versions.node) {
 
 /** Discover repository unit tests in stable path order. */
 export function discoverUnitTestFiles(root = process.cwd()) {
-  const sourceRoot = path.join(root, 'src');
   const files = [];
   const visit = (directory) => {
     for (const entry of readdirSync(directory, { withFileTypes: true })) {
@@ -34,7 +33,16 @@ export function discoverUnitTestFiles(root = process.cwd()) {
       }
     }
   };
-  visit(sourceRoot);
+  // `server/` holds the production-server tests; it may be absent on older
+  // checkouts, so tolerate a missing directory.
+  for (const sourceDir of ['src', 'server']) {
+    const absolute = path.join(root, sourceDir);
+    try {
+      visit(absolute);
+    } catch (error) {
+      if (error?.code !== 'ENOENT') throw error;
+    }
+  }
   return files.sort();
 }
 

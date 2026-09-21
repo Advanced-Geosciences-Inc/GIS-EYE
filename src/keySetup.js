@@ -14,6 +14,8 @@
  * the chip and the dialog are removed outright.
  */
 
+import { apiUrl } from './basePath.js';
+
 /** Chip label — pure, exported for tests. */
 export function keySetupChipLabel(status) {
   const missing = Math.max(0, (status?.total || 0) - (status?.setCount || 0));
@@ -151,7 +153,7 @@ export async function initKeySetup({ documentRef = globalThis.document, fetchImp
 
   let status = null;
   try {
-    const response = await doFetch('/api/setup/status', { cache: 'no-store' });
+    const response = await doFetch(apiUrl('/api/setup/status'), { cache: 'no-store' });
     if (!response.ok) throw new Error(String(response.status));
     status = await response.json();
   } catch {
@@ -262,7 +264,7 @@ export async function initKeySetup({ documentRef = globalThis.document, fetchImp
     applyButton?.setAttribute('aria-disabled', 'true');
     say('Saving…');
     try {
-      const response = await doFetch('/api/setup/keys', {
+      const response = await doFetch(apiUrl('/api/setup/keys'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updates),

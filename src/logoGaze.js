@@ -1,3 +1,5 @@
+import { withBase } from './basePath.js';
+
 const MAX_GAZE_SVG_UNITS = 34;
 const FULL_GAZE_DISTANCE_PX = 320;
 const GAZE_EASING = 0.2;
@@ -88,7 +90,9 @@ export function initLogoGaze(root = document) {
 
   const loadInlineLogos = async () => {
     try {
-      const source = logos[0].dataset.logoSrc || '/logo.svg';
+      const raw = logos[0].dataset.logoSrc || '/logo.svg';
+      // Absolute (http…) sources pass through; root-absolute paths get the deployment base.
+      const source = raw.startsWith('/') ? withBase(raw) : raw;
       const response = await window.fetch(source);
       if (!response.ok) return;
       const markup = await response.text();

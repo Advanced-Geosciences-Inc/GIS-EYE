@@ -4,16 +4,19 @@
    ═══════════════════════════════════════════════ */
 
 :root {
-  --bg-dark: #0a0a0f;
-  --glass-bg: rgba(12, 12, 20, 0.72);
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-border-hover: rgba(255, 255, 255, 0.15);
-  --accent: #00d4ff;
-  --accent-dim: rgba(0, 212, 255, 0.15);
-  --accent-glow: rgba(0, 212, 255, 0.4);
-  --text-primary: #e8eaed;
-  --text-secondary: rgba(232, 234, 237, 0.5);
-  --text-dim: rgba(232, 234, 237, 0.3);
+  /* Colors derive from the --gs-* palette (src/theme/palette.css) so the
+     GeoStack portal's light/dark themes flow through every tokenized rule;
+     the fallbacks are the original dark values. */
+  --bg-dark: var(--gs-surface-0, #0a0a0f);
+  --glass-bg: var(--gs-surface-1, rgba(12, 12, 20, 0.72));
+  --glass-border: var(--gs-border, rgba(255, 255, 255, 0.08));
+  --glass-border-hover: var(--gs-border-strong, rgba(255, 255, 255, 0.15));
+  --accent: var(--gs-accent, #00d4ff);
+  --accent-dim: var(--gs-accent-soft, rgba(0, 212, 255, 0.15));
+  --accent-glow: var(--gs-accent-glow, rgba(0, 212, 255, 0.4));
+  --text-primary: var(--gs-text-1, #e8eaed);
+  --text-secondary: var(--gs-text-2, rgba(232, 234, 237, 0.5));
+  --text-dim: var(--gs-text-3, rgba(232, 234, 237, 0.3));
   --font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   --panel-radius: 16px;
@@ -2197,6 +2200,118 @@ body.ui-clean-view #scene-runtime.active {
   opacity: 1;
   visibility: visible;
   transform: translateX(-50%) translateY(0);
+}
+
+/* ── Update-available toast (new deploys) ──── */
+/* Sits below the transient #toast in the z-ladder (see ui.js) and persists
+   until the user chooses Update now / Later. */
+#update-toast {
+  position: fixed;
+  bottom: 100px;
+  right: 24px;
+  z-index: 190;
+  max-width: 340px;
+}
+
+#update-toast[hidden] {
+  display: none;
+}
+
+.update-toast-card {
+  padding: 14px 16px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border-hover);
+  border-radius: var(--panel-radius);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.15);
+}
+
+.update-toast-title {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+
+.update-toast-notes {
+  list-style: none;
+  margin: 0 0 8px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.update-toast-notes li {
+  line-height: 1.4;
+  color: var(--text-primary);
+}
+
+.update-toast-chip {
+  display: inline-block;
+  padding: 0 6px;
+  border-radius: 4px;
+  border: 1px solid var(--glass-border-hover);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  vertical-align: middle;
+}
+
+.update-toast-chip-fixed { color: var(--accent); border-color: var(--accent-dim); }
+.update-toast-chip-added { color: #7CFFB2; border-color: rgba(124, 255, 178, 0.3); }
+.update-toast-chip-security { color: #ff9f43; border-color: rgba(255, 159, 67, 0.35); }
+
+.update-toast-reassure {
+  margin: 0 0 10px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.update-toast-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.update-toast-actions button {
+  flex: 1;
+  padding: 7px 10px;
+  border-radius: var(--btn-radius);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+
+.update-toast-apply {
+  background: var(--accent-dim);
+  border: 1px solid var(--accent);
+  color: var(--accent);
+}
+
+.update-toast-apply:hover {
+  background: var(--accent-glow);
+}
+
+.update-toast-later {
+  background: transparent;
+  border: 1px solid var(--glass-border);
+  color: var(--text-secondary);
+}
+
+.update-toast-later:hover {
+  border-color: var(--glass-border-hover);
+  color: var(--text-primary);
 }
 
 /* ── Aircraft Cockpit View ─────────────────── */

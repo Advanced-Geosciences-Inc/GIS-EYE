@@ -1,5 +1,6 @@
 import * as Cesium from 'cesium';
 import { governorRequestRender } from '../renderGovernor.js';
+import { apiUrl } from '../basePath.js';
 import {
   clearSelectedEntityContextForLayer,
   getSelectedEntityContext,
@@ -444,7 +445,7 @@ async function loadInstallations() {
     const fetchInstallations = async (exact) => {
       const query = new URLSearchParams(Object.entries(box).map(([key, value]) => [key, value.toFixed(5)]));
       if (exact) query.set('exact', '1');
-      const response = await fetch(`/api/military-installations?${query}`, { signal: requestAbort.signal });
+      const response = await fetch(apiUrl(`/api/military-installations?${query}`), { signal: requestAbort.signal });
       const body = await response.json();
       if (!response.ok) throw Object.assign(new Error(body?.error || `Installation feed HTTP ${response.status}`), {
         failureReason: ['rate_limited', 'timeout', 'query_failed'].includes(body?.reason) ? body.reason : 'unavailable',
@@ -473,9 +474,9 @@ async function loadInstallations() {
       const longitude = (box.west + box.east) / 2;
       const radiusM = Math.min(50000, Math.max(1000, Math.round(Math.max(box.north - box.south, box.east - box.west) * 55_000)));
       try {
-        const placesResponse = await fetch(`/api/google/text-search?${new URLSearchParams({
+        const placesResponse = await fetch(apiUrl(`/api/google/text-search?${new URLSearchParams({
           q: 'military installation', lat: latitude.toFixed(5), lon: longitude.toFixed(5), radiusM: String(radiusM),
-        })}`, { signal: requestAbort.signal });
+        })}`), { signal: requestAbort.signal });
         const placesPayload = await placesResponse.json();
         if (!placesResponse.ok) throw new Error(placesPayload?.error || `Google Places HTTP ${placesResponse.status}`);
         const seen = new Set(records.map((record) => `${record.name.toLowerCase()}|${record.latitude.toFixed(3)}|${record.longitude.toFixed(3)}`));

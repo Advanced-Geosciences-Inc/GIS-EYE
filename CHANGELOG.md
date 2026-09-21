@@ -5,6 +5,48 @@ of current runtime behavior, see [`docs/CURRENT-STATE.md`](docs/CURRENT-STATE.md
 
 ## [Unreleased]
 
+### Added
+
+- Production server (`server/index.mjs`): the same API middlewares the dev
+  server mounts, served with the built client from a containerizable Node
+  process — `npm run serve:prod`, `Dockerfile`, `/healthz`, and a
+  deployment-config endpoint (`/api/config`) with per-deployment feature
+  flags for license-gated layers (OpenSky, TeleGeography cables,
+  datacenters, dams). The Provider Settings credential endpoints remain
+  dev-server-only. Local dev and the Pinokio launcher are unchanged.
+- Deployment path-prefix support (`GEV_BASE`, e.g. `/portal/gis/`): built
+  asset URLs and every client `/api/*` call resolve under the prefix via
+  `src/basePath.js`.
+- Fly.io blue/green deployment pipeline: staging deploys on every merge to
+  main, production promotes the staging-validated image on a published
+  GitHub Release behind an approval gate, with automatic rollback on a
+  failed post-deploy smoke test (`fly.*.toml`, deploy workflows,
+  `scripts/smoke-api.mjs`, `scripts/smoke-remote.mjs`,
+  `scripts/release-notes.mjs`, docs/agi/DEPLOY.md).
+- Portal SSO for hosted deployments (`GEV_AUTH_MODE` none/hs256/jwks) and
+  durable per-tenant provider quotas over Upstash Redis with a per-tenant
+  `/api/usage` readout. Both default off, keeping local and OSS behavior
+  identical.
+- Update-available toast: when a new build is deployed, connected clients
+  offer "Update now / Later" with the release's improvements and apply the
+  update with the exact view and all locally-stored settings preserved
+  (share-hash flush on `gev:before-update`, `src/updateToast.js`,
+  `src/stateMigrations.js`).
+- Light/dark theme tokens (`src/theme/palette.css` `--gs-*`) with
+  portal-driven selection (`?theme=`, `gs_theme` cookie, saved choice,
+  system preference) and no-flash boot; the chrome palette now derives from
+  the tokens while the globe and visual styles stay untouched.
+
+### Changed
+
+- Repository governance for the AGI fork: CODEOWNERS ownership, pull-request
+  and issue templates, fork repository links in `package.json`, a
+  `workflow_dispatch` trigger on CI, and operations runbooks under `docs/agi/`
+  (repo settings, upstream sync, releasing).
+- Changelog history headings deduplicated: historical dated entries under
+  "Pre-release development history" are now titled `[Pre-release]` so exactly
+  one `[Unreleased]` section exists.
+
 ### Fixed
 
 - Mapped-site outages show their scheduled retry countdown and distinguish
@@ -96,7 +138,7 @@ The dated entries and internal milestone numbers below predate the first
 tagged GitHub Release. They are retained as project history and do not
 represent previously published GitHub Releases.
 
-## [Unreleased] — 2026-08-24
+## [Pre-release] — 2026-08-24
 
 ### Added
 
@@ -144,7 +186,7 @@ represent previously published GitHub Releases.
 - Production dependency audit reports no known advisories; remaining audit
   findings are confined to development and QA tooling.
 
-## [Unreleased] — 2026-08-23
+## [Pre-release] — 2026-08-23
 
 ### Added
 
@@ -161,7 +203,7 @@ represent previously published GitHub Releases.
   stable across headings, with minor hull overlap allowed and no conspicuous
   top, bottom, or lateral projection.
 
-## [Unreleased] — 2026-08-18 to 2026-08-22
+## [Pre-release] — 2026-08-18 to 2026-08-22
 
 ### Added
 
@@ -189,7 +231,7 @@ represent previously published GitHub Releases.
 - Fixed stale overlay callbacks, parked-idle render leaks, cable-label sweep
   starvation, and several share-link state conflicts.
 
-## [Unreleased] — 2026-08-02 to 2026-08-16
+## [Pre-release] — 2026-08-02 to 2026-08-16
 
 ### Added
 
@@ -207,7 +249,7 @@ represent previously published GitHub Releases.
 - Improved proxy resilience, annotation outline bounds, CCTV enable pacing,
   contact de-emphasis, and deterministic visual stacking.
 
-## [Unreleased] — July 2026
+## [Pre-release] — July 2026
 
 ### Added
 
@@ -225,7 +267,7 @@ represent previously published GitHub Releases.
   close-zoom FIRMS anchors, antimeridian region framing, annotation resolution,
   cross-layer tracking ownership, and CCTV projection lifecycle issues.
 
-## [Unreleased] — June 2026
+## [Pre-release] — June 2026
 
 ### Added
 

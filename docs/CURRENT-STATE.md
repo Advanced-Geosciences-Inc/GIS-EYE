@@ -1,6 +1,41 @@
 # God's Eye View Current State
 
-Updated: August 24, 2026
+Updated: September 18, 2026
+
+## Hosted deployment runtime (AGI fork)
+
+The fork adds a production serving path without changing local dev or the
+Pinokio launcher (both still run the Vite dev server exactly as upstream):
+
+- **`server/index.mjs`** (`npm run serve:prod`, `Dockerfile`) serves the
+  built client plus the same `-proxy` plugin middlewares from
+  vite.config.js's factories over connect. Dev-only pieces stay out by
+  construction: `gev-key-setup` (Provider Settings writes) never installs,
+  and the smoke suite (`npm run smoke:api`) asserts it. New endpoints in
+  every mode (dev, preview, prod — `server/mw/meta.mjs`): `GET /healthz`,
+  `GET /api/config` (feature flags, base, version), `GET /api/version`
+  (build identity + release notes).
+- **Feature flags** (`GEV_FEATURE_OPENSKY|CABLES|DATACENTERS|DAMS`, default
+  on): disabled features 403 their API routes server-side and the client
+  (`src/runtimeConfig.js`) vetoes the layers via a DataLayerManager
+  visibility guard and hides their toggle rows. Everything stays enabled
+  locally; hosted deploys gate license-restricted layers.
+- **Base path** (`GEV_BASE`, e.g. `/portal/gis/`): Vite `base` plus
+  `src/basePath.js` (`withBase`/`apiUrl`) used by every client `/api/*`
+  call and runtime-read asset attribute. The server strips the prefix, so
+  prefixed and bare URLs both resolve.
+- **Portal SSO** (`GEV_AUTH_MODE` none/hs256/jwks, default none) and
+  **per-tenant quotas** (Upstash REST, `GEV_QUOTA_*`), both no-ops unless
+  configured — see docs/agi/DEPLOY.md.
+- **Update toast** (`src/updateToast.js`, `#update-toast`): polls
+  `/api/version` (10 min + tab-refocus); a changed build shows release
+  notes with Update now / Later. Update dispatches `gev:before-update`
+  (share-link manager flushes the hash) then reloads; localStorage state
+  plus the hash restore the exact view. `src/stateMigrations.js` carries
+  stored state across storage-shape changes (see CONTRIBUTING rule 5).
+- **Theme tokens** (`src/theme/palette.css` `--gs-*`, selection via
+  `?theme=` → `gs_theme` cookie → saved → system): style.css's `:root`
+  variables derive from them; globe rendering and GLSL styles unthemed.
 
 ## Installations and map-source guidance
 

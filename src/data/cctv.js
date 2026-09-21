@@ -52,6 +52,7 @@ import {
   activateCctvCameraFromWorldClick,
 } from '../cctvFocusRequest.js';
 import { bindTrackingClickGesture, isTrackingClickGesture } from './trackingClickGesture.js';
+import { apiUrl } from '../basePath.js';
 import {
   clearOverlaySource,
   hitTestWorldOverlay,
@@ -103,10 +104,10 @@ import { holdContinuousRender, releaseContinuousRender } from '../renderGovernor
 // ---------------------------------------------------------------------------
 // API endpoints
 // ---------------------------------------------------------------------------
-const FRAME_ENDPOINT = '/api/cctv/frame';
-const SOURCE_ENDPOINT = '/api/cctv/sources';
-const HEALTH_ENDPOINT = '/api/cctv/health';
-const MEDIA_ENDPOINT = '/api/cctv/media';
+const FRAME_ENDPOINT = apiUrl('/api/cctv/frame');
+const SOURCE_ENDPOINT = apiUrl('/api/cctv/sources');
+const HEALTH_ENDPOINT = apiUrl('/api/cctv/health');
+const MEDIA_ENDPOINT = apiUrl('/api/cctv/media');
 
 // ---------------------------------------------------------------------------
 // Timing and geometry constants

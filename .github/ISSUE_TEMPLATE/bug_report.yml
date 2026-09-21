@@ -1,0 +1,39 @@
+name: Bug report
+description: Something is broken or behaving unexpectedly
+labels: [bug]
+body:
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Launch the app (`npm run dev` / Pinokio / hosted)
+        2. ...
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, browser, Node version, and how you launched the app (dev server, Pinokio, hosted).
+      placeholder: macOS 15 / Chrome 150 / Node 24.14.0 / Pinokio
+    validations:
+      required: true
+  - type: textarea
+    id: keys
+    attributes:
+      label: Which providers were configured?
+      description: Name the providers only (e.g. "Google Maps + Cesium ion, no OpenAI"). Never paste keys or `.env` contents.
+  - type: textarea
+    id: logs
+    attributes:
+      label: Console or server output
+      description: Relevant browser console or terminal output. Redact anything sensitive.
+      render: text

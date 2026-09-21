@@ -146,6 +146,15 @@ export class ShareLinkManager {
     this._removeCameraChanged = this.viewer.camera.changed.addEventListener(() => {
       this._scheduleUpdate();
     });
+
+    // The update toast (src/updateToast.js) announces an imminent reload;
+    // flush any debounced state into the hash NOW so the new version
+    // restores the exact live view. (Guarded: unit tests stub a partial
+    // window.)
+    this._onBeforeUpdate = () => this._updateHash();
+    if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
+      window.addEventListener('gev:before-update', this._onBeforeUpdate);
+    }
   }
 
   /**
@@ -526,6 +535,9 @@ export class ShareLinkManager {
   /** Cancel owned work and release listeners without disturbing newer navigation. */
   destroy() {
     if (this._destroyed) return;
+    if (typeof window !== 'undefined' && typeof window.removeEventListener === 'function') {
+      window.removeEventListener('gev:before-update', this._onBeforeUpdate);
+    }
     const activeFlight = this._activeCameraFlight;
     if (activeFlight && this._isNavigationCurrent(activeFlight.navigationToken)) {
       this._cancelOwnedNavigation?.();

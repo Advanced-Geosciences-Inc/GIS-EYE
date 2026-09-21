@@ -9,8 +9,9 @@ import {
   resolveVoiceModel,
   serializeCostLimits,
 } from './voiceCost.js';
+import { apiUrl, withBase } from '../basePath.js';
 
-const TOKEN_URL = '/api/realtime/token';
+const TOKEN_URL = apiUrl('/api/realtime/token');
 const REALTIME_CALLS_URL = 'https://api.openai.com/v1/realtime/calls';
 const STATUS = {
   idle: 'OFF',
@@ -32,7 +33,7 @@ const VIEWPORT_MAX_PIXELS = 1200 * 900; // ~1.08 MP, matches the old 1200px-wide
 const VIEWPORT_MAX_ENCODED_BYTES = 200 * 1024; // ~200 KB encoded ceiling
 const ERROR_LOG_LIMIT = 30;
 const ERROR_STORAGE_KEY = 'gev-realtime-errors';
-const DEBUG_LOG_URL = '/api/realtime/debug-log';
+const DEBUG_LOG_URL = apiUrl('/api/realtime/debug-log');
 // Voice cost control (repo-wide `godsEyeView.<feature>.<field>` convention;
 // the neighbouring ERROR_STORAGE_KEY predates it).
 const VOICE_TIER_STORAGE_KEY = 'godsEyeView.voiceCost.tier';
@@ -2560,7 +2561,7 @@ function createVoiceControl({ reset = false } = {}) {
         </div>
       </div>
       <button id="gev-voice-button" type="button" aria-label="Voice control — hold Space to speak; click to toggle voice" aria-describedby="gev-voice-help">
-        <span class="gev-mic-orbit"><img src="/mic.svg" alt="" /></span>
+        <span class="gev-mic-orbit"><img src="${withBase('/mic.svg')}" alt="" /></span>
         <span class="gev-mic-label">ON/OFF</span>
       </button>
       <div class="gev-voice-visualizer" aria-hidden="true">

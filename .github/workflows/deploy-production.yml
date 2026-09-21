@@ -1,0 +1,75 @@
+name: Deploy production
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      image:
+        description: >-
+          Full image reference to deploy (e.g.
+          registry.fly.io/gis-eye-staging:sha-<sha>). Use for hotfix rollback
+          to a previously validated image.
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Promote, smoke, roll back on failure
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    # The environment carries the production Fly token and a required-reviewer
+    # gate (docs/agi/REPO-SETTINGS.md): promotion waits for that approval.
+    environment: production
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set up flyctl
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Resolve image to deploy
+        id: image
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          if [ -n "${{ github.event.inputs.image }}" ]; then
+            echo "ref=${{ github.event.inputs.image }}" >> "$GITHUB_OUTPUT"
+          else
+            # Promote the exact image the staging deploy built and validated
+            # for the release's commit — no rebuild between staging and prod.
+            echo "ref=registry.fly.io/gis-eye-staging:sha-${{ github.sha }}" >> "$GITHUB_OUTPUT"
+          fi
+          CURRENT=$(flyctl image show -a gis-eye-prod --json | node -e "let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{try{const j=JSON.parse(d);const m=Array.isArray(j)?j[0]:j;console.log(m.Registry+'/'+m.Repository+':'+m.Tag)}catch{console.log('')}})")
+          echo "previous=$CURRENT" >> "$GITHUB_OUTPUT"
+          echo "Deploying ${{ github.event.inputs.image || format('registry.fly.io/gis-eye-staging:sha-{0}', github.sha) }} (previous: $CURRENT)"
+
+      - name: Blue/green deploy
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: flyctl deploy -c fly.production.toml --image "${{ steps.image.outputs.ref }}"
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.14.0
+
+      - name: Remote smoke test
+        id: smoke
+        run: node scripts/smoke-remote.mjs https://gis-eye-prod.fly.dev/portal/gis/
+
+      - name: Roll back on smoke failure
+        if: failure() && steps.smoke.outcome == 'failure' && steps.image.outputs.previous != ''
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          echo "Smoke failed — rolling back to ${{ steps.image.outputs.previous }}"
+          flyctl deploy -c fly.production.toml --image "${{ steps.image.outputs.previous }}"

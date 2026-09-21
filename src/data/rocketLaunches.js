@@ -5,6 +5,7 @@ import {
   orbitFrameModelMatrix,
 } from './satellites.js';
 import { getKeyholeGeometry } from '../celestialRing.js';
+import { apiUrl } from '../basePath.js';
 import {
   clearOverlaySource,
   setOverlayEntries,
@@ -13,7 +14,7 @@ import {
 import { holdContinuousRender, releaseContinuousRender } from '../renderGovernor.js';
 
 const WINDOW_DAYS = 30;
-const API_URL = '/api/launches';
+const API_URL = apiUrl('/api/launches');
 
 export const ROCKET_MISSION_AMBIENT_OVERLAY_SOURCE_ID = 'rocket-missions';
 export const ROCKET_MISSION_SELECTED_OVERLAY_SOURCE_ID = 'rocket-mission-selected';
@@ -3255,7 +3256,7 @@ function schedulePostTleRetry(token) {
 function ensureActiveTleLookup(token) {
   if (_activeTleText) return Promise.resolve(_activeTleText);
   if (_activeTlePromise && _activeTlePromiseToken === token) return _activeTlePromise;
-  const request = fetch('/api/celestrak/active')
+  const request = fetch(apiUrl('/api/celestrak/active'))
     .then((activeResponse) => {
       if (!activeResponse.ok) throw new Error(`HTTP ${activeResponse.status}`);
       return activeResponse.text();

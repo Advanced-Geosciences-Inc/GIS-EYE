@@ -1,0 +1,28 @@
+name: Feature request
+description: Propose a new layer, capability, or improvement
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would this solve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+      description: What should the feature do? For a new data layer, name the data source and its license/terms (see DATA_SOURCES.md).
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+  - type: checkboxes
+    id: groundrules
+    attributes:
+      label: Ground rules
+      options:
+        - label: This request uses public data and does not involve named-person search, face recognition, or tracking individuals (see README "Responsible & Open").
+          required: true

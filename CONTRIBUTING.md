@@ -57,7 +57,8 @@ The highest-leverage places to jump in:
 2. Keep `npm run build`, `npm test`, and `npm run test:track` green and avoid new console errors.
 3. If you change runtime behavior, update `docs/CURRENT-STATE.md` and `CHANGELOG.md` in the same PR.
 4. If you add or change a data source, update [DATA_SOURCES.md](DATA_SOURCES.md) with its license and attribution. **Don't add data you don't have the right to redistribute** — fetch it at runtime instead.
-5. Describe what you changed and how you verified it (screenshots welcome for anything visual).
+5. If you bump any `*_STORAGE_VERSION` constant or `:vN`-suffixed localStorage key, add a migration in `src/stateMigrations.js` that carries the old value forward (or note an explicit reset in the CHANGELOG entry). The hosted update toast promises users that nothing they set up is lost across versions.
+6. Describe what you changed and how you verified it (screenshots welcome for anything visual).
 
 ## Maintainers
 

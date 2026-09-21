@@ -1,5 +1,6 @@
 import * as Cesium from 'cesium';
 import { governorRequestRender } from '../renderGovernor.js';
+import { apiUrl } from '../basePath.js';
 import {
   registerSpriteCollection,
   restoreSpriteOrder,
@@ -36,7 +37,7 @@ import {
 import { requestWorldFocus } from '../worldFocus.js';
 
 /** Same-origin live-fires proxy (vite.config.js firmsProxy — key stays server-side). */
-const FIRMS_API_URL = '/api/firms';
+const FIRMS_API_URL = apiUrl('/api/firms');
 /** Client poll interval; the proxy's 30 min TTL is what guards upstream quota. */
 const REFRESH_INTERVAL_MS = 600_000;
 

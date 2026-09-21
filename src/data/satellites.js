@@ -2,6 +2,7 @@ import * as Cesium from 'cesium';
 import { twoline2satrec, propagate, gstime, eciToGeodetic, degreesLong, degreesLat } from 'satellite.js';
 import { registerPickOwner, unregisterPickOwner, isOwnedByOtherLayer, resolvePickId } from './pickRegistry.js';
 import { findNextIssPass } from './issPass.js';
+import { apiUrl } from '../basePath.js';
 import {
   advanceSpriteFocus,
   clearFocusTarget,
@@ -1093,7 +1094,7 @@ async function _loadDenseCatalog({ signal = null } = {}) {
   _notifyRowControls();
   try {
     loadSignal.throwIfAborted();
-    const res = await fetch(`/api/celestrak/${DENSE_GROUP_PATH}`, { signal: loadSignal });
+    const res = await fetch(apiUrl(`/api/celestrak/${DENSE_GROUP_PATH}`), { signal: loadSignal });
     if (!res.ok) {
       console.warn(`[Data:Satellites] Dense group '${DENSE_GROUP_PATH}' fetch failed (${res.status})`);
       _denseLoadFailed(token, `feed unavailable (${res.status})`);
@@ -1632,7 +1633,7 @@ const satellitesLayer = {
       // gracefully (parseTLE of an upstream error body yields []).
       const results = await Promise.all(CATALOG_GROUPS.map(async (groupDef) => {
         try {
-          const res = await fetch(`/api/celestrak/${groupDef.path}`, { signal: updateSignal });
+          const res = await fetch(apiUrl(`/api/celestrak/${groupDef.path}`), { signal: updateSignal });
           if (!res.ok) return { ...groupDef, entries: [], ok: false };
           const entries = parseTLE(await res.text());
           updateSignal.throwIfAborted();
