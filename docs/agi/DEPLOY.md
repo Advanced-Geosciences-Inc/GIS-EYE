@@ -18,9 +18,16 @@ publish Release ─▶ deploy-production.yml ─▶ gis-eye-prod.fly.dev  (appro
 ```bash
 fly apps create gis-eye-staging
 fly apps create gis-eye-prod
-fly tokens create deploy -a gis-eye-staging   # → staging environment FLY_API_TOKEN
-fly tokens create deploy -a gis-eye-prod      # → production environment FLY_API_TOKEN
 ```
+
+Deploy tokens are minted by `mint-token.yml` in
+[infra-admin](https://github.com/Advanced-Geosciences-Inc/infra-admin) with
+`kind=fly-deploy`, `destination=gh-repo-secret`, `target=GIS-EYE`:
+`fly_app=gis-eye-staging` → `FLY_DEPLOY_TOKEN_STAGING`, and
+`fly_app=gis-eye-prod` → `FLY_DEPLOY_TOKEN_PRODUCTION`. The value never leaves
+the runner. Fallback when minting is unavailable: create the token with
+`fly tokens create deploy -a <app>` and store it as the `FLY_API_TOKEN` secret
+of the matching GitHub environment; the workflows read the minted secret first.
 
 Runtime secrets (per app; never GitHub secrets):
 
@@ -40,8 +47,8 @@ fly secrets set -a gis-eye-prod \
 ### GitHub
 
 Per `docs/agi/REPO-SETTINGS.md`: create the `staging` and `production`
-environments (production with a required reviewer) holding their
-`FLY_API_TOKEN`s, and repository secrets `GOOGLE_MAPS_API_KEY` /
+environments (production with a required reviewer), the Fly deploy tokens
+above, and repository secrets `GOOGLE_MAPS_API_KEY` /
 `CESIUM_ION_TOKEN` (build-time, client-exposed by design — restrict by HTTP
 referrer to the hosted origin).
 

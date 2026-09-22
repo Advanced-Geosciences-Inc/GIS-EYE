@@ -28,10 +28,14 @@ with the matching JSON payload.
 
 Settings → Environments:
 
-- `staging` — no required reviewers. Secrets: `FLY_API_TOKEN` (deploy token
-  scoped to the staging Fly app).
-- `production` — required reviewer: at least one CODEOWNER. Secrets:
-  `FLY_API_TOKEN` (deploy token scoped to the production Fly app).
+- `staging` — no required reviewers.
+- `production` — required reviewer: at least one CODEOWNER.
+
+Fly deploy tokens are repository secrets minted by infra-admin
+(`FLY_DEPLOY_TOKEN_STAGING`, `FLY_DEPLOY_TOKEN_PRODUCTION`; see
+`docs/agi/DEPLOY.md`). A hand-created token can instead be stored as the
+`FLY_API_TOKEN` secret of the matching environment; the workflows prefer the
+minted secret when both exist.
 
 Promotion to production is gated by the environment's required-reviewer
 approval on the `deploy-production` workflow run.
