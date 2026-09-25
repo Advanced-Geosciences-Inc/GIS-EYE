@@ -134,6 +134,19 @@ export async function createGevApp({
 
   const hasDist = fs.existsSync(path.join(distDir, 'index.html'));
   if (hasDist) {
+    // vite-plugin-cesium copies Cesium's static tree to `<outDir>/<base>/cesium`
+    // (its CESIUM_BASE_URL joins the base in), while every other asset lands
+    // at the dist root. Requests reach here already prefix-stripped, so
+    // serve that base-nested tree as a second root or the globe never loads.
+    const nestedRoot = base === '/' ? null : path.join(distDir, base);
+    if (nestedRoot && fs.existsSync(nestedRoot)) {
+      app.use(sirv(nestedRoot, {
+        etag: true,
+        setHeaders(res) {
+          res.setHeader('Cache-Control', 'public, max-age=86400');
+        },
+      }));
+    }
     app.use(sirv(distDir, {
       etag: true,
       single: true,

@@ -2,6 +2,8 @@
 
 AGI fork of the open-source "God's Eye View" globe. Read `docs/CURRENT-STATE.md`
 for runtime behavior and `docs/agi/` for deployment, releasing, and repo settings.
+Start with `docs/agi/ARCHITECTURE.md` for how the two runtimes, the request path,
+and the deploy pipeline fit together.
 
 - Node 24.14.x (`engines` rejects 22). `npm test`, `npm run build`, and
   `npm run smoke:api` are the local gates; CI is the authority.

@@ -125,6 +125,38 @@ test('base-prefixed and bare URLs both resolve under GEV_BASE', async () => {
   });
 });
 
+test('Cesium assets nested under the base in dist are served at the prefixed URL', async () => {
+  // Mirrors a real `GEV_BASE=/portal/gis/ vite build`: vite-plugin-cesium
+  // writes dist/portal/gis/cesium/** while index.html sits at the dist root.
+  const distDir = makeDist();
+  const cesiumDir = path.join(distDir, 'portal', 'gis', 'cesium', 'Widgets');
+  fs.mkdirSync(cesiumDir, { recursive: true });
+  fs.writeFileSync(path.join(distDir, 'portal', 'gis', 'cesium', 'Cesium.js'), '/* cesium */');
+  fs.writeFileSync(path.join(cesiumDir, 'widgets.css'), '/* widgets */');
+  const { httpServer } = await createGevApp({
+    env: { ...process.env, GEV_BASE: '/portal/gis/' },
+    distDir,
+  });
+  await new Promise((resolve) => httpServer.listen(0, '127.0.0.1', resolve));
+  try {
+    const script = await get(httpServer, '/portal/gis/cesium/Cesium.js');
+    assert.equal(script.status, 200);
+    assert.equal(script.body, '/* cesium */');
+    assert.match(script.headers['content-type'] || '', /javascript/);
+
+    const css = await get(httpServer, '/portal/gis/cesium/Widgets/widgets.css');
+    assert.equal(css.status, 200);
+    assert.equal(css.body, '/* widgets */');
+
+    // Root-level assets and the SPA document still resolve.
+    assert.equal((await get(httpServer, '/portal/gis/assets/app-abc123.js')).status, 200);
+    assert.match((await get(httpServer, '/portal/gis/')).body, /God's Eye View/);
+  } finally {
+    await new Promise((resolve) => httpServer.close(resolve));
+    fs.rmSync(distDir, { recursive: true, force: true });
+  }
+});
+
 test('disabled features refuse their API routes and report through /api/config', async () => {
   await withApp({ GEV_FEATURE_OPENSKY: '0', GEV_FEATURE_CABLES: 'off' }, async ({ httpServer }) => {
     const config = JSON.parse((await get(httpServer, '/api/config')).body);

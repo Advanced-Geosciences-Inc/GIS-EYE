@@ -49,6 +49,12 @@ of current runtime behavior, see [`docs/CURRENT-STATE.md`](docs/CURRENT-STATE.md
 
 ### Fixed
 
+- Hosted builds under a path prefix (`GEV_BASE=/portal/gis/`) now load the
+  globe. vite-plugin-cesium writes Cesium's static tree beneath the base
+  (`dist/portal/gis/cesium/`), which the production server never served, so
+  `Cesium.js` returned 404 and the app could not boot. The server now also
+  serves the base-nested build tree.
+
 - Mapped-site outages show their scheduled retry countdown and distinguish
   known Overpass rate limits, timeouts, and query failures. Search feedback no
   longer claims a refresh succeeded while the layer is unavailable or loading.
