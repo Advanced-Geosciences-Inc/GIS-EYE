@@ -360,7 +360,7 @@ src/
 └── scenes/                 # Cinematic scene director
 ```
 
-See [`docs/CURRENT-STATE.md`](docs/CURRENT-STATE.md) for the authoritative runtime reference.
+See [`docs/CURRENT-STATE.md`](docs/CURRENT-STATE.md) for the authoritative runtime reference, and [`docs/agi/ARCHITECTURE.md`](docs/agi/ARCHITECTURE.md) for the hosted-fork architecture (runtimes, request path, deploy pipeline).
 
 ---
 
