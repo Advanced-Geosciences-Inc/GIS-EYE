@@ -2,13 +2,17 @@
 /**
  * Post-deploy smoke test against a live deployment.
  *
- *   node scripts/smoke-remote.mjs https://gis-eye-staging.fly.dev/portal/gis/
+ *   node scripts/smoke-remote.mjs https://gis-eye-staging.fly.dev/globe/
  *
  * Verifies, with retries while the deploy settles:
  *   - /healthz answers ok
  *   - /api/config answers with a feature map
  *   - the app document loads under the base path
  *   - a proxy route is mounted (its own answer, not the /api 404 fallback)
+ *
+ * A deployment with GEV_AUTH_MODE set answers 401 to every request but /healthz (the SSO gate,
+ * server/lib/auth.mjs). That 401 is the expected, healthy answer for the config and document
+ * checks, so it counts as passing; a 404/5xx or a missing gate message still fails.
  */
 const baseArg = process.argv[2];
 if (!baseArg) {
@@ -35,6 +39,8 @@ async function probe(pathname, { attempts = 10, delayMs = 6000 } = {}) {
   throw lastError;
 }
 
+const authGated = (res) => res.status === 401 && /Sign in through the portal/.test(res.text);
+
 let failures = 0;
 const check = (ok, label) => {
   console.log(`  ${ok ? 'ok  ' : 'FAIL'} ${label}`);
@@ -53,10 +59,10 @@ try {
 } catch {
   features = null;
 }
-check(config.status === 200 && features !== null, `api/config → ${config.status}`);
+check((config.status === 200 && features !== null) || authGated(config), `api/config → ${config.status}`);
 
 const doc = await probe('');
-check(doc.status === 200 && /God's Eye View/.test(doc.text), `app document → ${doc.status}`);
+check((doc.status === 200 && /God's Eye View/.test(doc.text)) || authGated(doc), `app document → ${doc.status}`);
 
 const proxy = await probe('api/celestrak/active');
 const unclaimed = proxy.status === 404 && proxy.text.includes('"Not found"');

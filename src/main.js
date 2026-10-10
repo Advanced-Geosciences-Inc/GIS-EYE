@@ -16,6 +16,7 @@ import militaryInstallationsLayer from './data/militaryInstallations.js';
 import militaryAwarenessLayer from './data/militaryAwareness.js';
 import localDataLayers from './data/localLayers.js';
 import { LAYER_STATE_REGISTRY } from './data/layerState.js';
+import { withDatasetLayer, enableDatasetLayer } from './datasetParam.js';
 import { registerDataCredits } from './data/dataCredits.js';
 import { SceneDirector } from './scenes/director.js';
 import { initGevVoiceCommands } from './voice/gevRealtime.js';
@@ -237,14 +238,16 @@ async function init() {
     dataManager.register(militaryInstallationsLayer);
     dataManager.register(militaryAwarenessLayer);
     militaryAwarenessLayer.attachDataManager(dataManager);
-    for (const layer of localDataLayers) {
+    // Fork: ?dataset=<signed url> from Ultimate-GIS adds one layer (src/datasetParam.js).
+    const handoff = withDatasetLayer(localDataLayers, LAYER_STATE_REGISTRY);
+    for (const layer of handoff.layers) {
       dataManager.register(layer);
     }
     // Hosted deployments disable license-gated layers per deployment; the
     // guard must exist before share restoration can re-enable anything.
     installFeatureGate(dataManager, await runtimeConfigPromise);
     // Restoration starts only after the complete production registry is sealed.
-    dataManager.finalizeRegistrations(LAYER_STATE_REGISTRY);
+    dataManager.finalizeRegistrations(handoff.registry);
     if (import.meta.env.DEV) {
       window.__gevQaRegisterLayer = (targetManager, layerModule) => {
         if (targetManager !== dataManager) throw new Error('QA layer manager mismatch');
@@ -256,6 +259,7 @@ async function init() {
       };
     }
     dataManager.buildTogglePanel(document.getElementById('data-toggles'));
+    enableDatasetLayer(dataManager, viewer, handoff.datasetUrl);
     styleManager.attachDataManager(dataManager);
 
     // Initialize deterministic scene playback for social clip capture
