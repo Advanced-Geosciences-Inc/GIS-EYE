@@ -35,7 +35,7 @@ jobs:
         run: |
           flyctl deploy -c fly.staging.toml --remote-only \
             --image-label sha-${{ github.sha }} \
-            --build-arg GEV_BASE=/portal/gis/ \
+            --build-arg GEV_BASE=/globe/ \
             --build-arg GIT_SHA=${{ github.sha }} \
             --build-arg GOOGLE_MAPS_API_KEY=${{ secrets.GOOGLE_MAPS_API_KEY }} \
             --build-arg CESIUM_ION_TOKEN=${{ secrets.CESIUM_ION_TOKEN }}
@@ -46,4 +46,4 @@ jobs:
           node-version: 24.14.0
 
       - name: Remote smoke test
-        run: node scripts/smoke-remote.mjs https://gis-eye-staging.fly.dev/portal/gis/
+        run: node scripts/smoke-remote.mjs https://gis-eye-staging.fly.dev/globe/

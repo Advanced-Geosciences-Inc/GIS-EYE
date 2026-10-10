@@ -13,18 +13,23 @@ primary_region = "dfw"
 
 [env]
   PORT = "8080"
-  GEV_BASE = "/portal/gis/"
+  GEV_BASE = "/globe/"
   GEV_FEATURE_OPENSKY = "0"
   GEV_FEATURE_CABLES = "0"
   GEV_RATELIMIT_OPENAI_PER_MIN = "30"
   GEV_RATELIMIT_GOOGLE_PER_MIN = "120"
-  # Portal SSO — flip to "jwks" once the GeoStack portal issues session JWTs
-  # (see docs/agi/DEPLOY.md). GEV_JWT_HS256_SECRET / UPSTASH_* are Fly
-  # secrets, never listed here.
-  GEV_AUTH_MODE = "none"
-  # GEV_JWT_ISSUER = "https://geostack.com"
-  # GEV_JWT_JWKS_URL = "https://geostack.com/.well-known/jwks.json"
-  # GEV_LOGIN_URL = "https://geostack.com/portal/login"
+  # Portal SSO. Ultimate-GIS (POST /api/integrations/globe/session) mints a 15-minute HS256
+  # JWT and sets the gev_session cookie on geostack.com (Path=/globe). The secret
+  # GEV_JWT_HS256_SECRET must equal Ultimate-GIS's GLOBE_JWT_SECRET and be set with
+  # `fly secrets set` BEFORE this deploys: hs256 mode refuses to boot without it. UPSTASH_*
+  # are Fly secrets too; neither is ever listed here.
+  GEV_AUTH_MODE = "hs256"
+  GEV_JWT_ISSUER = "https://geostack.com"
+  GEV_JWT_AUDIENCE = "gis-eye"
+  # A visitor with no session is sent here with ?return=<globe url>. This Ultimate-GIS page
+  # mints the session, sets the cookie and sends them back (the portal itself cannot mint a
+  # gev_session token and only reads ?next=).
+  GEV_LOGIN_URL = "https://geostack.com/gis/globe-launch"
   # Per-tenant budgets (active once UPSTASH_REDIS_REST_* secrets are set):
   GEV_QUOTA_OPENAI_PER_MIN = "20"
   GEV_QUOTA_OPENAI_PER_DAY = "500"

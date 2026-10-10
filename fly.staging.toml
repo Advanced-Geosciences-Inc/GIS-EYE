@@ -5,7 +5,10 @@ primary_region = "dfw"
 
 [env]
   PORT = "8080"
-  GEV_BASE = "/portal/gis/"
+  GEV_BASE = "/globe/"
+  # Staging stays unauthenticated so the post-deploy smoke test (and a direct look at the
+  # fly.dev URL) works. To exercise SSO there, mirror the production block
+  # (GEV_AUTH_MODE/GEV_JWT_ISSUER/GEV_JWT_AUDIENCE/GEV_LOGIN_URL + the GEV_JWT_HS256_SECRET secret).
   # License-gated layers stay off on hosted deploys until cleared
   # (DATA_SOURCES.md: OpenSky non-commercial, TeleGeography cables NC).
   GEV_FEATURE_OPENSKY = "0"

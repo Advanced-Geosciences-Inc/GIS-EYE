@@ -64,7 +64,7 @@ jobs:
 
       - name: Remote smoke test
         id: smoke
-        run: node scripts/smoke-remote.mjs https://gis-eye-prod.fly.dev/portal/gis/
+        run: node scripts/smoke-remote.mjs https://gis-eye-prod.fly.dev/globe/
 
       - name: Roll back on smoke failure
         if: failure() && steps.smoke.outcome == 'failure' && steps.image.outputs.previous != ''
